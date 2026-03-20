@@ -21,7 +21,7 @@ It evaluates candidates, ranks them, and automates hiring decisions such as:
 
 ###  Candidate Dashboard (Real-Time)
 
- **[Open Live Dashboard]([https://docs.google.com/spreadsheets/d/14pISN7MmYG9fAv7H-QGLJIA8vfQRkwXw3RcREVsAQCw/edit?gid=0#gid=0])**
+ **[Open Live Dashboard](https://docs.google.com/spreadsheets/d/14pISN7MmYG9fAv7H-QGLJIA8vfQRkwXw3RcREVsAQCw/edit?gid=0#gid=0)**
 
 >  This sheet updates automatically from the n8n workflow
 
