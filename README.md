@@ -92,8 +92,15 @@ README.md
 ---
 
 ##  Email Templates
+###  Accepted Candidates
 
- **[View Email Templates](docs/email_templates.md)**
+![Accepted](docs/Accepted.png)
+
+---
+
+###  Rejected Candidates
+
+![Rejected](docs/Rejected.png)
 
 ---
 
