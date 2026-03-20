@@ -30,7 +30,6 @@ It evaluates candidates, ranks them, and automates hiring decisions such as:
 ##  Workflow File
 
  **[View Workflow JSON](workflow/Resume_Screening.json)**
-(No download required - explore directly on GitHub)
 
 ---
 
