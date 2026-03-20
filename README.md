@@ -32,7 +32,11 @@ It evaluates candidates, ranks them, and automates hiring decisions such as:
  **[View Workflow JSON](workflow/Resume_Screening.json)**
 
 ---
+### Backend Workflow Architecture
 
+![Backend Architecture](docs/Backend.png)
+
+---
 ##  How It Works
 
 ```mermaid
