@@ -111,5 +111,5 @@ README.md
  ## Author
 
 Himanshu  
- Email: himanshu.bohra2423@gmail.com
+ Email: himanshu.bohra2423@gmail.com <br>
  LinkedIn: https://www.linkedin.com/in/himanshubohra24/ 
