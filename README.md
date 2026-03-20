@@ -107,3 +107,9 @@ README.md
 ##  Setup Guide
 
  **[View Setup Instructions](docs/setup_guide.md)**
+
+ ## Author
+
+Himanshu  
+ Email: himanshu.bohra2423@gmail.com
+ LinkedIn: https://www.linkedin.com/in/himanshubohra24/ 
