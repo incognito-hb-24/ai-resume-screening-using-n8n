@@ -1,0 +1,633 @@
+{
+  "name": "Resume_Screening",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8e1bf52d-d7f1-4b20-8cec-8008e2fd7b9c",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// NODE: Load All Resume Data\n// Contains JD + All Candidate Resumes\n// ============================================\n\nconst jd = `\nRole: Data Analyst\nRequired Skills: SQL, Python, Excel, Data Analytics, Reporting\nNice to Have: Tableau, Power BI, Machine Learning, Google Analytics, R\nExperience: 2+ years in data analysis\nEducation: Bachelor's in CS, Statistics, or related field\n`;\n\nconst resumes = [\n  {\n    name: \"Priya Sharma\",\n    email: \"iamhimanshuhb+priya@gmail.com\",\n    phone: \"9876543210\",\n    position: \"Data Analyst\",\n    resume_text: \"Data Analyst at Analytics Co for 3 years. Built SQL queries for daily reporting with 500K rows. Created Power BI dashboards for sales team. Used Python pandas for data cleaning pipelines. Reduced report generation time by 40%. Junior Analyst at StartupXYZ for 1 year doing Excel financial modeling and AB test analysis. B.Tech Computer Science Delhi University 2019. Skills: SQL, Python, pandas, numpy, Power BI, Excel, Tableau, Git, analytics, data\"\n  },\n  {\n    name: \"Rahul Verma\",\n    email: \"iamhimanshuhb+rahul@gmail.com\",\n    phone: \"9876543211\",\n    position: \"Data Analyst\",\n    resume_text: \"Marketing Executive at BrandCo for 2 years. Managed social media campaigns. Created monthly performance reports in basic Excel. Coordinated with design team. Intern at AdAgency for 6 months doing campaign planning and basic data entry. BBA Marketing Mumbai University 2021. Skills: MS Office, Canva, Google Ads, Instagram Ads, Basic Excel\"\n  },\n  {\n    name: \"Ananya Patel\",\n    email: \"iamhimanshuhb+ananya@gmail.com\",\n    phone: \"9876543212\",\n    position: \"Data Analyst\",\n    resume_text: \"Business Intelligence Analyst at FinServ Ltd for 2.5 years. Developed complex SQL queries and stored procedures. Built Tableau dashboards for C-suite reporting. Moderate Python experience in scripting and automation. Worked with Google Analytics for web data analysis. B.Sc Statistics Pune University 2020. Skills: SQL, Tableau, Python, Excel, Google Analytics, analytics, data, reporting\"\n  },\n  {\n    name: \"Kiran Mehta\",\n    email: \"iamhimanshuhb+kiran@gmail.com\",\n    phone: \"9876543213\",\n    position: \"Data Analyst\",\n    resume_text: \"Software Developer at TechStart for 3 years. Backend development in Java and Python. Database management with PostgreSQL and MySQL. Some data pipeline work. No dedicated analytics or BI experience. B.E. Computer Engineering 2020. Skills: Java, Python, SQL, PostgreSQL, REST APIs, Git\"\n  },\n  {\n    name: \"Sneha Rao\",\n    email: \"iamhimanshuhb+sneha@gmail.com\",\n    phone: \"9876543214\",\n    position: \"Data Analyst\",\n    resume_text: \"Senior Data Analyst at E-commerce Giant for 4 years. Advanced SQL with window functions CTEs and optimization. Python for ML pipelines using scikit-learn and pandas. Power BI and Tableau certified. Led dashboard migration project saving 20 hours per week. Mentored 2 junior analysts. M.Sc Data Science IIT Bombay 2019. Skills: SQL, Python, R, Power BI, Tableau, machine learning, Excel, Google Analytics, analytics, data, senior, lead\"\n  },\n  {\n    name: \"Arjun Nair\",\n    email: \"iamhimanshuhb+arjun@gmail.com\",\n    phone: \"9876543215\",\n    position: \"Data Analyst\",\n    resume_text: \"Data Analyst at HealthTech for 2 years. SQL reporting and dashboard creation. Basic Python for automation. Excel pivot tables and charts. Some exposure to Tableau. B.Sc Mathematics 2021. Skills: SQL, Excel, Python, Tableau, data, analytics\"\n  },\n  {\n    name: \"Meera Iyer\",\n    email: \"iamhimanshuhb+meera@gmail.com\",\n    phone: \"9876543216\",\n    position: \"Data Analyst\",\n    resume_text: \"Content Writer at MediaCo for 3 years. Blog writing and SEO content. Social media management. Basic Google Analytics for traffic reporting. No SQL no Python no data analysis experience. B.A. English Literature 2020. Skills: Writing, SEO, WordPress, Google Analytics, Social Media\"\n  }\n];\n\n// Return each resume as a separate item with JD attached\nreturn resumes.map(r => ({\n  json: {\n    ...r,\n    jd: jd,\n    processed_at: new Date().toISOString()\n  }\n}));"
+      },
+      "id": "7655d2e5-0e67-4ab2-9d33-3de340f4a937",
+      "name": "Load Resumes Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const resume = ($json.resume_text || '').toLowerCase();\nconst name = $json.name || 'Unknown';\nconst email = $json.email || '';\nconst phone = $json.phone || '';\nconst position = $json.position || '';\n\nconst mustHaveSkills = [\n  { keyword: 'sql', label: 'SQL' },\n  { keyword: 'python', label: 'Python' },\n  { keyword: 'excel', label: 'Excel' },\n  { keyword: 'analytics', label: 'Analytics' },\n  { keyword: 'data', label: 'Data' }\n];\n\nconst niceToHaveSkills = [\n  { keyword: 'tableau', label: 'Tableau' },\n  { keyword: 'power bi', label: 'Power BI' },\n  { keyword: 'machine learning', label: 'Machine Learning' },\n  { keyword: 'google analytics', label: 'Google Analytics' },\n  { keyword: 'r ', label: 'R Language' }\n];\n\nconst experienceKeywords = ['2 years', '3 years', '4 years', '5 years', '2.5 years', 'senior', 'lead'];\nconst educationKeywords = ['b.tech', 'b.sc', 'm.sc', 'bachelor', 'master', 'computer science', 'statistics', 'iit'];\nconst leadershipKeywords = ['led', 'managed', 'mentored', 'supervised'];\n\nlet mustHaveScore = 0;\nlet niceToHaveScore = 0;\nlet experienceScore = 0;\nlet educationScore = 0;\nlet leadershipScore = 0;\nlet strengths = [];\nlet gaps = [];\nlet matchedSkills = [];\nlet missingSkills = [];\n\nmustHaveSkills.forEach(skill => {\n  if (resume.includes(skill.keyword)) {\n    mustHaveScore += 15;\n    strengths.push('Strong ' + skill.label + ' skills');\n    matchedSkills.push(skill.label);\n  } else {\n    gaps.push('Missing ' + skill.label);\n    missingSkills.push(skill.label);\n  }\n});\n\nniceToHaveSkills.forEach(skill => {\n  if (resume.includes(skill.keyword)) {\n    niceToHaveScore += 8;\n    matchedSkills.push(skill.label + ' (bonus)');\n  }\n});\n\nexperienceKeywords.forEach(exp => {\n  if (resume.includes(exp)) experienceScore = 10;\n});\n\neducationKeywords.forEach(edu => {\n  if (resume.includes(edu)) educationScore = 5;\n});\n\nleadershipKeywords.forEach(lead => {\n  if (resume.includes(lead)) {\n    leadershipScore = 5;\n    strengths.push('Demonstrates leadership');\n  }\n});\n\nlet totalScore = mustHaveScore + niceToHaveScore + experienceScore + educationScore + leadershipScore;\ntotalScore = Math.round((totalScore / 135) * 100);\ntotalScore = Math.min(totalScore, 100);\n\nif (experienceScore > 0) strengths.push('Has relevant work experience');\nif (educationScore > 0) strengths.push('Relevant educational background');\n\nstrengths = strengths.slice(0, 3);\ngaps = gaps.slice(0, 3);\n\nconst recommendation = totalScore >= 75 ? 'Strong Fit' : totalScore >= 50 ? 'Moderate Fit' : 'Not Fit';\nconst status = totalScore >= 75 ? 'Selected' : 'Rejected';\nconst priority = totalScore >= 90 ? 'High Priority' : totalScore >= 75 ? 'Medium Priority' : totalScore >= 50 ? 'Review' : 'Rejected';\n\nreturn {\n  candidate_name: name,\n  candidate_email: email,\n  candidate_phone: phone,\n  applied_position: position,\n  total_score: totalScore,\n  must_have_score: mustHaveScore,\n  nice_to_have_score: niceToHaveScore,\n  experience_score: experienceScore,\n  education_score: educationScore,\n  leadership_score: leadershipScore,\n  must_have_coverage: Math.round((matchedSkills.filter(s => !s.includes('bonus')).length / mustHaveSkills.length) * 100) + '%',\n  matched_skills: matchedSkills.join(', '),\n  missing_skills: missingSkills.join(', '),\n  strengths: strengths,\n  gaps: gaps,\n  recommendation: recommendation,\n  recommendation_reason: totalScore >= 75 ? 'Meets required skills' : 'Does not meet minimum requirements',\n  status: status,\n  priority: priority,\n  screened_at: new Date().toISOString(),\n  screened_date: new Date().toLocaleDateString('en-IN')\n};"
+      },
+      "id": "03c02267-9d17-4a45-b6f1-4b9f8ac83511",
+      "name": "Score Resume",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all();\n\nreturn all.map((item) => {\n  return {\n    json: {\n      candidate_name: item.json.candidate_name,\n      candidate_email: item.json.candidate_email,\n      candidate_phone: item.json.candidate_phone,\n      applied_position: item.json.applied_position,\n      total_score: item.json.total_score,\n      must_have_score: item.json.must_have_score,\n      nice_to_have_score: item.json.nice_to_have_score,\n      experience_score: item.json.experience_score,\n      education_score: item.json.education_score,\n      leadership_score: item.json.leadership_score,\n      must_have_coverage: item.json.must_have_coverage,\n      matched_skills: item.json.matched_skills,\n      missing_skills: item.json.missing_skills,\n      strengths: item.json.strengths,\n      gaps: item.json.gaps,\n      recommendation: item.json.recommendation,\n      recommendation_reason: item.json.recommendation_reason,\n      status: item.json.status,\n      priority: item.json.priority,\n      screened_at: item.json.screened_at,\n      screened_date: item.json.screened_date\n    }\n  };\n});"
+      },
+      "id": "cf8a11b0-5b18-4bae-a33d-cc4f11653a6c",
+      "name": "Rank Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-score",
+              "leftValue": "={{ $json.total_score }}",
+              "rightValue": 75,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bdf2da9c-10a5-4086-be89-209d68ac4be1",
+      "name": "Score >= 75?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14pISN7MmYG9fAv7H-QGLJIA8vfQRkwXw3RcREVsAQCw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Screening Results",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.candidate_name }}",
+            "Email": "={{ $json.candidate_email }}",
+            "Phone": "={{ $json.candidate_phone }}",
+            "Position": "={{ $json.applied_position }}",
+            "Total Score": "={{ $json.total_score }}",
+            "Must have coverage": "={{ $json.must_have_coverage }}",
+            "Matched Skills": "={{ $json.matched_skills }}",
+            "Missing Skills": "={{ $json.missing_skills }}",
+            "Strengths": "={{ $json.strengths }}",
+            "Gaps": "={{ $json.gaps }}",
+            "Recommendation": "={{ $json.recommendation }}",
+            "Reason": "={{ $json.recommendation_reason }}",
+            "Priority": "={{ $json.priority }}",
+            "Screened Date": "={{ $json.screened_date }}",
+            "Status": "Selected"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Position",
+              "displayName": "Position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Score",
+              "displayName": "Total Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Must have coverage",
+              "displayName": "Must have coverage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Matched Skills",
+              "displayName": "Matched Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Missing Skills",
+              "displayName": "Missing Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Strengths",
+              "displayName": "Strengths",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gaps",
+              "displayName": "Gaps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Screened Date",
+              "displayName": "Screened Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7c03c3cd-325e-4bdc-87bf-be28f865cfd5",
+      "name": "Save Selected to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CsY18j4oMinrJwMh",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14pISN7MmYG9fAv7H-QGLJIA8vfQRkwXw3RcREVsAQCw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Screening Results",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.candidate_name }}",
+            "Email": "={{ $json.candidate_email }}",
+            "Phone": "={{ $json.candidate_phone }}",
+            "Position": "={{ $json.applied_position }}",
+            "Total Score": "={{ $json.total_score }}",
+            "Must have coverage": "={{ $json.must_have_coverage }}",
+            "Matched Skills": "={{ $json.matched_skills }}",
+            "Missing Skills": "={{ $json.missing_skills }}",
+            "Strengths": "={{ $json.strengths }}",
+            "Gaps": "={{ $json.gaps }}",
+            "Recommendation": "={{ $json.recommendation }}",
+            "Reason": "={{ $json.recommendation_reason }}",
+            "Status": "Not Selected",
+            "Priority": "={{ $json.priority }}",
+            "Screened Date": "={{ $json.screened_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Position",
+              "displayName": "Position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Score",
+              "displayName": "Total Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Must have coverage",
+              "displayName": "Must have coverage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Matched Skills",
+              "displayName": "Matched Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Missing Skills",
+              "displayName": "Missing Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Strengths",
+              "displayName": "Strengths",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gaps",
+              "displayName": "Gaps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Screened Date",
+              "displayName": "Screened Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ad649d1a-3a7a-4a60-8e09-a509c9bb9010",
+      "name": "Save Rejected to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CsY18j4oMinrJwMh",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=🎉 Interview Invitation - {{ $json.Position }} | Nutrabay",
+        "message": "==<div style=\"font-family: Arial, sans-serif; padding: 20px;\">\n<h2 style=\"color: #4CAF50;\">Congratulations {{ $json.Name }}!</h2>\n<p>Your application for <strong>{{ $json.Position }}</strong> has been shortlisted!</p>\n<p><strong>Your Score:</strong> {{ $json['Total Score'] }}/100</p>\n<p><strong>Priority:</strong> {{ $json.Priority }}</p>\n<p>Our HR team will contact you within 2 business days.</p>\n<br>\n<p>Best regards,<br>HR Team<br>Nutrabay</p>\n</div>",
+        "options": {}
+      },
+      "id": "fc83648b-e030-46ed-b0a9-7956c8ecb187",
+      "name": "Send Interview Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        0
+      ],
+      "webhookId": "d7054749-19a8-43d0-9902-a967f9525577",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OMmgDd6bJN6Mm4BI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=Your Application Update - {{ $json.Position }} | Nutrabay",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;\">\n\n<div style=\"background: #607D8B; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;\">\n  <h1 style=\"color: white; margin: 0;\">Application Update</h1>\n</div>\n\n<div style=\"padding: 30px;\">\n  <p style=\"font-size: 16px;\">Dear <strong>{{ $json.candidate_name }}</strong>,</p>\n\n  <p>Thank you for your interest in the <strong>{{ $json.applied_position }}</strong> position at <strong>Nutrabay</strong> and for taking the time to apply.</p>\n\n  <p>After carefully reviewing your application, we have decided to move forward with other candidates whose profiles more closely match our current requirements.</p>\n\n  <div style=\"background: #fafafa; padding: 15px; border-radius: 8px; margin: 20px 0;\">\n    <h3 style=\"margin-top: 0;\">📋 Application Summary</h3>\n    <p><strong>Position Applied:</strong> {{ $json.applied_position }}</p>\n    <p><strong>Profile Score:</strong> {{ $json.total_score }}/100</p>\n    <p><strong>Skills to Strengthen:</strong> {{ $json.missing_skills }}</p>\n  </div>\n\n  <div style=\"background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;\">\n    <h3 style=\"color: #e65100; margin-top: 0;\">💡 Suggested Improvements:</h3>\n    <ul>\n      {{ $json.gaps.map(g => '<li>' + g + '</li>').join('') }}\n    </ul>\n  </div>\n\n  <p>We encourage you to apply for future openings that match your skills and experience. We will keep your profile on file.</p>\n\n  <p style=\"margin-top: 30px;\">We wish you all the best in your job search!</p>\n\n  <p>Best regards,<br><strong>HR Team</strong><br>Nutrabay<br>hr@nutrabay.com</p>\n</div>\n\n<div style=\"background: #f5f5f5; padding: 10px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #999;\">\n  This is an automated email. Please do not reply directly.\n</div>\n\n</div>",
+        "options": {}
+      },
+      "id": "2380c021-fc29-4680-ac13-9bb6fa0e4213",
+      "name": "Send Rejection Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        320
+      ],
+      "webhookId": "b3211cba-99a5-4d93-8ff4-b4b6263703b9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OMmgDd6bJN6Mm4BI",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Load Resumes Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Resumes Data": {
+      "main": [
+        [
+          {
+            "node": "Score Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Resume": {
+      "main": [
+        [
+          {
+            "node": "Rank Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank Candidates": {
+      "main": [
+        [
+          {
+            "node": "Score >= 75?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score >= 75?": {
+      "main": [
+        [
+          {
+            "node": "Save Selected to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Rejected to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Selected to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Interview Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Rejected to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Send Rejection Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ed0c3b58-4869-463d-bc40-44d52764090b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9db9aed7142d28432458993dcffb01479a9038996add06dcf1d39513710d1ad7"
+  },
+  "id": "JnAIwGV8s2siJXz0",
+  "tags": [
+    {
+      "updatedAt": "2026-03-20T06:59:48.700Z",
+      "createdAt": "2026-03-20T06:59:48.700Z",
+      "id": "Gkz2Za9nOxfwvlsN",
+      "name": "No AI"
+    },
+    {
+      "updatedAt": "2026-03-20T06:59:48.750Z",
+      "createdAt": "2026-03-20T06:59:48.750Z",
+      "id": "SgUjlzEqqio5Hb40",
+      "name": "Resume Screening"
+    },
+    {
+      "updatedAt": "2026-03-20T05:55:14.438Z",
+      "createdAt": "2026-03-20T05:55:14.438Z",
+      "id": "dd17lOCOHsAvKjEO",
+      "name": "HR Tech"
+    }
+  ]
+}
