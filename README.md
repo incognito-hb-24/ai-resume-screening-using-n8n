@@ -29,8 +29,8 @@ It evaluates candidates, ranks them, and automates hiring decisions such as:
 
 ##  Workflow File
 
- **[View Workflow JSON](workflow/Resume_Screening_Complete.json)**
-(No download required — explore directly on GitHub)
+ **[View Workflow JSON](workflow/Resume_Screening.json)**
+(No download required - explore directly on GitHub)
 
 ---
 
@@ -59,7 +59,7 @@ D -->|No| F[Save + Send Rejection Email]
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 * n8n
 * Docker
